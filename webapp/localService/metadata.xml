@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="1.0" xmlns:edmx="http://schemas.microsoft.com/ado/2007/06/edmx" xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata" xmlns:sap="http://www.sap.com/Protocols/SAPData">
+    <edmx:DataServices m:DataServiceVersion="2.0">
+        <Schema Namespace="ZGW_OBJETIVOS_COMPRADORES_SRV" xml:lang="es" sap:schema-version="1" xmlns="http://schemas.microsoft.com/ado/2008/09/edm">
+            <EntityType Name="objetivosMes" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="Subcategoria"/>
+                </Key>
+                <Property Name="Subcategoria" Type="Edm.String" Nullable="false" MaxLength="10" sap:unicode="false"/>
+                <Property Name="Mes" Type="Edm.String" Nullable="false" MaxLength="2" sap:unicode="false"/>
+                <Property Name="Ejercicio" Type="Edm.String" Nullable="false" MaxLength="4" sap:unicode="false"/>
+                <Property Name="Incremento" Type="Edm.String" Nullable="false" MaxLength="10" sap:unicode="false" sap:filterable="false"/>
+                <Property Name="Bultos" Type="Edm.String" Nullable="false" MaxLength="10" sap:unicode="false" sap:filterable="false"/>
+                <Property Name="SaldoAnterior" Type="Edm.String" Nullable="false" MaxLength="10" sap:unicode="false" sap:filterable="false"/>
+                <Property Name="SaldoActual" Type="Edm.String" Nullable="false" MaxLength="10" sap:unicode="false" sap:updatable="false" sap:filterable="false"/>
+            </EntityType>
+            <EntityType Name="objetivos" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="Subcategoria"/>
+                </Key>
+                <Property Name="Subcategoria" Type="Edm.String" Nullable="false" MaxLength="10" sap:unicode="false"/>
+                <Property Name="Descripcion" Type="Edm.String" MaxLength="50" sap:unicode="false" sap:filterable="false"/>
+                <Property Name="Comprador" Type="Edm.String" MaxLength="10" sap:unicode="false"/>
+                <Property Name="Proveedor" Type="Edm.String" MaxLength="10" sap:unicode="false"/>
+                <NavigationProperty Name="objetivosComp" Relationship="ZGW_OBJETIVOS_COMPRADORES_SRV.objetivosComp" FromRole="FromRole_objetivosComp" ToRole="ToRole_objetivosComp"/>
+            </EntityType>
+            <Association Name="objetivosComp" sap:content-version="1">
+                <End Type="ZGW_OBJETIVOS_COMPRADORES_SRV.objetivos" Multiplicity="*" Role="FromRole_objetivosComp"/>
+                <End Type="ZGW_OBJETIVOS_COMPRADORES_SRV.objetivosMes" Multiplicity="*" Role="ToRole_objetivosComp"/>
+                <ReferentialConstraint>
+                    <Principal Role="FromRole_objetivosComp">
+                        <PropertyRef Name="Subcategoria"/>
+                    </Principal>
+                    <Dependent Role="ToRole_objetivosComp">
+                        <PropertyRef Name="Subcategoria"/>
+                    </Dependent>
+                </ReferentialConstraint>
+            </Association>
+            <EntityContainer Name="ZGW_OBJETIVOS_COMPRADORES_SRV_Entities" m:IsDefaultEntityContainer="true" sap:supported-formats="atom json xlsx">
+                <EntitySet Name="objetivosMesSet" EntityType="ZGW_OBJETIVOS_COMPRADORES_SRV.objetivosMes" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:pageable="false" sap:content-version="1"/>
+                <EntitySet Name="objetivosSet" EntityType="ZGW_OBJETIVOS_COMPRADORES_SRV.objetivos" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:pageable="false" sap:content-version="1"/>
+                <AssociationSet Name="objetivosComp_AssocSet" Association="ZGW_OBJETIVOS_COMPRADORES_SRV.objetivosComp" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:content-version="1">
+                    <End EntitySet="objetivosSet" Role="FromRole_objetivosComp"/>
+                    <End EntitySet="objetivosMesSet" Role="ToRole_objetivosComp"/>
+                </AssociationSet>
+            </EntityContainer>
+            <atom:link rel="self" href="http://appdev.nini.com.ar:8001/sap/opu/odata/sap/ZGW_OBJETIVOS_COMPRADORES_SRV/$metadata" xmlns:atom="http://www.w3.org/2005/Atom"/>
+            <atom:link rel="latest-version" href="http://appdev.nini.com.ar:8001/sap/opu/odata/sap/ZGW_OBJETIVOS_COMPRADORES_SRV/$metadata" xmlns:atom="http://www.w3.org/2005/Atom"/>
+        </Schema>
+    </edmx:DataServices>
+</edmx:Edmx>

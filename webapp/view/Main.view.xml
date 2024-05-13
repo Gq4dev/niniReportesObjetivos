@@ -1,0 +1,56 @@
+<mvc:View
+    controllerName="reportesobjetivos.controller.Main"
+    xmlns:mvc="sap.ui.core.mvc"
+    displayBlock="true"
+    height="100%"
+    xmlns="sap.m"
+>
+
+        <Page
+            id="page"
+            title="{i18n>title}"
+            showNavButton="true"
+            navButtonPress=".onNavHome"
+        >
+            <headerContent>
+                <Image
+                    src="https://gq4bucket.s3.amazonaws.com/ninilogo.jpeg"
+                    width="60px"
+                />
+            </headerContent>
+            <Panel
+                class="sapUiSmallMarginTop"
+                visible="true"
+            >
+                <FlexBox
+                    alignItems="Center"
+                    justifyContent="Center"
+                    wrap="Wrap"
+                
+                >
+                    <GenericTile
+                        class="sapUiTinyMarginBegin sapUiTinyMarginTop "
+                        header="{i18n>reporteSubcategoria}"
+                        press="pressReportSubCategory"
+                        frameType="TwoByHalf"
+                    >
+                        <TileContent>
+                            <ImageContent src="sap-icon://manager-insight" />
+                        </TileContent>
+                    </GenericTile>
+                    <GenericTile
+                        class="sapUiTinyMarginBegin sapUiTinyMarginTop "
+                        header="{i18n>reporteProveedor}"
+                        press="pressReportCategory"
+                        frameType="TwoByHalf"
+                        visible="false"
+                    >
+                        <TileContent>
+                            <ImageContent src="sap-icon://manager-insight" />
+                        </TileContent>
+                    </GenericTile>
+                </FlexBox>
+            </Panel>
+        </Page>
+
+</mvc:View>

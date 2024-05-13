@@ -1,0 +1,113 @@
+<mvc:View
+    controllerName="reportesobjetivos.controller.SubCategories.reportCategories"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:core="sap.ui.core"
+    xmlns:form="sap.ui.layout.form"
+    displayBlock="true"
+    xmlns="sap.m"
+>
+    <Shell>
+        <Page
+            title="{i18n>title} - {i18n>subCategories}"
+            showNavButton="true"
+            navButtonPress=".onNavBack"
+        >
+            <content>
+                <form:SimpleForm
+                    editable="true"
+                    layout="ColumnLayout"
+                >
+                    <form:title>
+                        <core:Title
+                            text="Proyeccion ventas por subcategoria - 2024"
+                        />
+                    </form:title>
+                    <Label text="SubCategoria" />
+                    <Select
+                        width="200px"
+                        forceSelection="false"
+                        selectedKey="{/SelectedMonth}"
+                        items="{
+             path: '/items',
+               sorter: { path: 'subCategory' }
+    }"
+                        change="onSubCategorySelect"
+                    >
+                        <core:Item
+                            key="{subCategory}"
+                            text="{subCategory}"
+                        />
+                    </Select>
+                </form:SimpleForm>
+
+                <Table
+                    id="reportSubCategoriesTable"
+                    class="sapUiSmallMarginTop"
+                    items="{/months}"
+                >
+                    <!-- <headerToolbar>
+                <OverflowToolbar >
+                    <Title id="title" text="Proyeccion ventas por subcategoria - 2024"/>
+                    <ToolbarSeparator/>
+                    	<Label text="Mes"/>
+                    	<Select width="200px"  forceSelection="false" selectedKey="{/SelectedMonth}" items="{
+             path: '/items',
+               sorter: { path: 'month' }
+    }" change="onMonthSelect">
+
+              <core:Item key="{month}" text="{month}" />
+            </Select>
+                </OverflowToolbar>
+            </headerToolbar> -->
+                    <columns>
+                        <Column>
+                            <Text text="{i18n>month}" />
+                        </Column>
+                        <Column>
+                            <Text text="{i18n>objetive}" />
+                        </Column>
+                        <Column>
+                            <Text text="{i18n>objBalanceWith}" />
+                        </Column>
+                        <Column>
+                            <Text text="{i18n>realSale}" />
+                        </Column>
+                        <Column>
+                            <Text text="{i18n>statusState}" />
+                        </Column>
+                        <Column>
+                            <Text text="{i18n>status}" />
+                        </Column>
+                        <Column>
+                            <Text text="{i18n>deliveryProgress}" />
+                        </Column>
+                    </columns>
+                    <items>
+                        <ColumnListItem>
+                            <cells>
+                                <ObjectIdentifier title="{month}" />
+                                <Text text="{objBalance}" />
+                                <Text text="{objBalanceWith}" />
+                                <Text text="{realSale}" />
+                                <Text
+                                    text="{= ${realSale}-${objBalanceWith}}"
+                                />
+                                <ObjectStatus
+                                    text="{status}"
+                                    state="{statusState}"
+                                />
+
+                                <ProgressIndicator
+                                    percentValue="{deliveryProgress}"
+                                    displayValue="{deliveryProgress}%"
+                                    state="{statusState}"
+                                    showValue="true"
+                                />
+                            </cells>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+            </content>
+        </Page>
+    </Shell>
+</mvc:View>

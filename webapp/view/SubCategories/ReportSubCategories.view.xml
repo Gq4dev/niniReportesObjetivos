@@ -1,0 +1,157 @@
+<mvc:View
+    controllerName="reportesobjetivos.controller.SubCategories.reportSubCategories"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:core="sap.ui.core"
+    xmlns:t="sap.ui.table"
+    xmlns:form="sap.ui.layout.form"
+    xmlns:f="sap.f"
+    xmlns:fb="sap.ui.comp.filterbar"
+    xmlns="sap.m"
+    displayBlock="true"
+    height="100%"
+>
+    <Page
+        title="{i18n>title} - {i18n>subCategories} - ({oCount>/count})"
+        showNavButton="true"
+        enableScrolling="true"
+        navButtonPress=".onNavHome"
+    >
+        <fb:FilterBar
+            id="filterbar"
+            persistencyKey="myPersKey"
+            useToolbar="false"
+            search="prepareOData"
+        >
+            <fb:filterGroupItems>
+                <fb:FilterGroupItem
+                    name="proveedor"
+                    label="{i18n>proveedor}"
+                    groupName="Group1"
+                    visibleInFilterBar="true"
+                >
+                    <fb:control>
+                        <ComboBox
+                            id="proveedor"
+                            name="proveedor"
+                            selectionChange=".onSelectionChange"
+                            items=""
+                        >
+                            <items>
+                                <core:Item
+                                    key="0000011238"
+                                    text="0000011238"
+                                />
+                            </items>
+                        </ComboBox>
+                    </fb:control>
+                </fb:FilterGroupItem>
+                <fb:FilterGroupItem
+                    name="grupo"
+                    label="{i18n>grupo}"
+                    groupName="Group1"
+                    visibleInFilterBar="true"
+                >
+                    <fb:control>
+                        <ComboBox
+                            id="grupo"
+                            name="grupo"
+                            selectionChange=".onSelectionChange"
+                            items=""
+                        >
+                            <items>
+                                <core:Item
+                                    key="C01"
+                                    text="C01"
+                                />
+                            </items>
+                        </ComboBox>
+                    </fb:control>
+                </fb:FilterGroupItem>
+                <fb:FilterGroupItem
+                    name="clearSearch"
+                    label="{i18n>clearFilters}"
+                    groupName="Search"
+                    visibleInFilterBar="true"
+                >
+                    <fb:control>
+                        <Button
+                            class="button"
+                            icon="sap-icon://decline"
+                            tooltip="Clear all filters"
+                            press="clearAllFilters"
+                        />
+                    </fb:control>
+                </fb:FilterGroupItem>
+            </fb:filterGroupItems>
+        </fb:FilterBar>
+
+        <content>
+            <t:Table
+                id="gridTable"
+                visible="true"
+                fixedColumnCount="2"
+                selectionMode="None"
+                alternateRowColors="true"
+                class="sapUiTinyMargin"
+                visibleRowCount="3"
+            >
+                <t:extension>
+                    <OverflowToolbar
+                        style="Clear"
+                        height="80px"
+                    >
+                        <VBox
+                            alignItems="End"
+                            direction="Row"
+                            class="spaceBetween"
+                        >
+                            <VBox>
+                                <Label text="Selecciona subcategorias:" />
+                                <MultiComboBox
+                                    id="subcategoryFilter"
+                                    selectionChange="onSubcategorySelectionChange"
+                                    width="350px"
+                                    items="{
+			            path: '/results',
+                        length:600,
+			            sorter: { path: 'Descripcion' }
+            		      	}"
+                                >
+                                    <core:Item
+                                        key="{Descripcion}"
+                                        text="{Descripcion}"
+                                    />
+                                </MultiComboBox>
+                            </VBox>
+                            <Button
+                                icon="sap-icon://decline"
+                                tooltip="Clear all filters"
+                                press="clearAllFilters"
+                            />
+                        </VBox>
+                        <VBox class="provgrupo">
+                            <Text id="provgrupo" />
+                        </VBox>
+                        <ToolbarSpacer />
+
+                        <Button
+                            id="refresh"
+                            enabled="false"
+                            icon="sap-icon://synchronize"
+                            tooltip="Refresh"
+                            press="prepareOData"
+                        />
+
+                        <Text text="Ultima actualizacion {oCount>/update}" />
+                    </OverflowToolbar>
+                </t:extension>
+            </t:Table>
+        </content>
+        <footer>
+            <OverflowToolbar id="footerToolbar">
+                <Text text="{version>/version}" />
+                <ToolbarSpacer />
+            </OverflowToolbar>
+        </footer>
+    </Page>
+</mvc:View>

@@ -1,0 +1,29 @@
+/* Enter your custom styles here */
+
+.progressIndicator {
+  /* padding: 0.25rem 1.25rem 0.75rem 0 !important ; */
+  margin: none !important;
+}
+
+.textCenter {
+  text-align: center;
+}
+
+.spaceBetween {
+  gap: 10px;
+}
+.sap-phone .sapMPI:not(.sapMPIDisplayOnly),
+.sap-tablet .sapMPI:not(.sapMPIDisplayOnly) {
+  margin: 0 !important;
+}
+
+.provgrupo {
+  padding: 18px 0 0 40px;
+  justify-content: center;
+}
+.provgrupo span {
+  font-size: 17px;
+}
+.button {
+  width: 30px !important;
+}
