@@ -38,7 +38,7 @@ sap.ui.define(
         }
         this._busyDialogLoad.open();
 
-        var oDataFilter = new Array();
+        var oDataFilter = [];
 
         if (iProveedor.getValue()) {
           oDataFilter.push(new Filter("Proveedor", FilterOperator.EQ, iProveedor.getSelectedKey()));
@@ -50,10 +50,10 @@ sap.ui.define(
 
         tProvGrupo.setText(iProveedor.getValue() + "     " + "(" + iGrupo.getValue() + ")");
 
-        let queryFilter = new Array(new Filter({ filters: oDataFilter, and: true }));
+        
 
         oModelOData.read("/objetivosSet", {
-          filters: queryFilter,
+          filters: oDataFilter,
           urlParameters: {
             $expand: "objetivosComp",
           },
@@ -203,8 +203,8 @@ sap.ui.define(
       clearSearch: function () {
         const oComboProveedor = this.byId("proveedor"),
           oComboGrupo = this.byId("grupo");
-        oComboProveedor.setValue("");
-        oComboGrupo.setValue("");
+        oComboProveedor.setSelectedKey("");
+        oComboGrupo.setSelectedKey("");
       },
       clearAllFilters: function () {
         var oMultiComboBox = this.byId("subcategoryFilter");
