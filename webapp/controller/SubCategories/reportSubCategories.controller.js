@@ -12,6 +12,8 @@ sap.ui.define(
     return BaseController.extend("reportesobjetivos.controller.SubCategories.reportSubCategories", {
       formatter: formatter,
       onInit: function () {
+        this.getProveedores();
+        this.getCompradores();
         this.createDynamicGridTable();
       },
       prepareOData: function () {
@@ -39,14 +41,14 @@ sap.ui.define(
         var oDataFilter = new Array();
 
         if (iProveedor.getValue()) {
-          oDataFilter.push(new Filter("Proveedor", FilterOperator.EQ, iProveedor.getValue()));
+          oDataFilter.push(new Filter("Proveedor", FilterOperator.EQ, iProveedor.getSelectedKey()));
         }
 
         if (iGrupo.getValue()) {
-          oDataFilter.push(new Filter("Comprador", FilterOperator.EQ, iGrupo.getValue()));
+          oDataFilter.push(new Filter("Comprador", FilterOperator.EQ, iGrupo.getSelectedKey()));
         }
 
-        tProvGrupo.setText(iProveedor.getValue() + "  " + iGrupo.getValue());
+        tProvGrupo.setText(iProveedor.getValue() + "     " + "(" + iGrupo.getValue() + ")");
 
         let queryFilter = new Array(new Filter({ filters: oDataFilter, and: true }));
 
@@ -56,7 +58,11 @@ sap.ui.define(
             $expand: "objetivosComp",
           },
           success: (aData) => {
-            console.log("aca", aData);
+            if (aData.results.length === 0) {
+              this._busyDialogLoad.close();
+              sap.m.MessageToast.show("No hay datos para los filtros seleccionados");
+              return;
+            }
             aData.results.forEach((item, idx) => {
               for (let month in item.objetivosComp.results) {
                 const previousMonthData = item.objetivosComp.results[month - 1];
@@ -81,7 +87,7 @@ sap.ui.define(
             oCount.setData({ count: aData.results.length, update: formattedDate });
             bRefresh.setEnabled(true);
             this.getView().setModel(oModelo);
-            this.byId('gridTable').setShowOverlay(false)
+            this.byId("gridTable").setShowOverlay(false);
             this._busyDialogLoad.close();
           },
           error: (error) => {
@@ -98,8 +104,6 @@ sap.ui.define(
 
         const currentDateTime = new Date();
         const month = currentDateTime.getMonth().toString();
-
-        console.log(month);
 
         oTableG.addColumn(
           new sap.ui.table.Column({
@@ -196,20 +200,44 @@ sap.ui.define(
           oBinding.filter([]);
         }
       },
-      clearAllFilters: function () {
-        var oMultiComboBox = this.byId("subcategoryFilter"),
-          oComboProveedor = this.byId("proveedor"),
+      clearSearch: function () {
+        const oComboProveedor = this.byId("proveedor"),
           oComboGrupo = this.byId("grupo");
-
-        oMultiComboBox.removeAllSelectedItems();
         oComboProveedor.setValue("");
         oComboGrupo.setValue("");
+      },
+      clearAllFilters: function () {
+        var oMultiComboBox = this.byId("subcategoryFilter");
+
+        oMultiComboBox.removeAllSelectedItems();
 
         this.onSubcategorySelectionChange();
       },
-      onSelectionChange: function(){
-        this.byId('gridTable').setShowOverlay(true)
-      }
+      onSelectionChange: function () {
+        this.byId("gridTable").setShowOverlay(true);
+      },
+      getProveedores: function () {
+        const oModel = this.getOwnerComponent().getModel("report");
+        const mProveedores = new JSONModel();
+        oModel.read("/datosProveedorSet", {
+          success: (data) => {
+            console.log(data);
+            mProveedores.setData(data.results);
+            this.getView().setModel(mProveedores, "proveedores");
+          },
+        });
+      },
+      getCompradores: function () {
+        const oModel = this.getOwnerComponent().getModel("report");
+        const mCompradores = new JSONModel();
+        oModel.read("/datosCompradorSet", {
+          success: (data) => {
+            console.log(data);
+            mCompradores.setData(data.results);
+            this.getView().setModel(mCompradores, "compradores");
+          },
+        });
+      },
     });
   }
 );

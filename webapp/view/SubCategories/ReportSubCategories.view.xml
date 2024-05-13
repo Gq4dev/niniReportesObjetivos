@@ -34,12 +34,15 @@
                             id="proveedor"
                             name="proveedor"
                             selectionChange=".onSelectionChange"
-                            items=""
+                            showSecondaryValues="true"
+                            filterSecondaryValues= "true"
+                            items="{proveedores>/}"
                         >
                             <items>
-                                <core:Item
-                                    key="0000011238"
-                                    text="0000011238"
+                                <core:ListItem
+                                    key="{proveedores>Proveedor}"
+                                    text="{proveedores>Nombre}"
+                                    additionalText="{proveedores>Proveedor}"
                                 />
                             </items>
                         </ComboBox>
@@ -56,12 +59,15 @@
                             id="grupo"
                             name="grupo"
                             selectionChange=".onSelectionChange"
-                            items=""
+                            showSecondaryValues="true"
+                            filterSecondaryValues="true"
+                            items="{compradores>/}"
                         >
                             <items>
-                                <core:Item
-                                    key="C01"
-                                    text="C01"
+                                <core:ListItem
+                                    key="{compradores>Comprador}"
+                                    text="{compradores>Name}"
+                                    additionalText="{compradores>Comprador}"
                                 />
                             </items>
                         </ComboBox>
@@ -78,7 +84,7 @@
                             class="button"
                             icon="sap-icon://decline"
                             tooltip="Clear all filters"
-                            press="clearAllFilters"
+                            press="clearSearch"
                         />
                     </fb:control>
                 </fb:FilterGroupItem>
