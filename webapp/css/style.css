@@ -27,3 +27,9 @@
 .button {
   width: 30px !important;
 }
+.bold {
+  font-weight: bold !important;
+}
+.sapMInput.myCustomCSSClass .sapMInputBaseInner {
+  text-transform: uppercase;
+}

@@ -30,22 +30,25 @@
                     visibleInFilterBar="true"
                 >
                     <fb:control>
-                        <ComboBox
+                        <Input
                             id="proveedor"
-                            name="proveedor"
-                            selectionChange=".onSelectionChange"
-                            showSecondaryValues="true"
-                            filterSecondaryValues= "true"
-                            items="{proveedores>/}"
+                            liveChange="onLiveChange"
+                            showSuggestion="true"
+                            showValueHelp="true"
+                            valueHelpRequest=".onValueHelpRequest"
+                            suggestionItems="{
+                                      path: 'proveedores>/',
+                                      length:5000,
+                                    sorter: { path: 'Nombre' }}"
                         >
-                            <items>
+                            <suggestionItems>
                                 <core:ListItem
-                                    key="{proveedores>Proveedor}"
                                     text="{proveedores>Nombre}"
+                                    key="{proveedores>Proveedor}"
                                     additionalText="{proveedores>Proveedor}"
                                 />
-                            </items>
-                        </ComboBox>
+                            </suggestionItems>
+                        </Input>
                     </fb:control>
                 </fb:FilterGroupItem>
                 <fb:FilterGroupItem

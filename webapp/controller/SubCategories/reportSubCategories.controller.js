@@ -5,13 +5,16 @@ sap.ui.define(
     "reportesobjetivos/utils/formatter",
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
+    "sap/ui/core/Fragment",
   ],
-  function (BaseController, JSONModel, formatter, Filter, FilterOperator) {
+  function (BaseController, JSONModel, formatter, Filter, FilterOperator, Fragment) {
     "use strict";
 
     return BaseController.extend("reportesobjetivos.controller.SubCategories.reportSubCategories", {
       formatter: formatter,
       onInit: function () {
+        const oCount = new JSONModel({ count: 0, update: "", proveedores: 0 });
+        this.getOwnerComponent().setModel(oCount, "oCount");
         this.getProveedores();
         this.getCompradores();
         this.createDynamicGridTable();
@@ -20,7 +23,7 @@ sap.ui.define(
         const oModelOData = this.getOwnerComponent().getModel("report");
         const oResourceBundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
         const oModelo = new JSONModel();
-        const oCount = new JSONModel({ count: 0, update: "" });
+        const oCount = this.getOwnerComponent().getModel("oCount");
 
         const iProveedor = this.byId("proveedor");
         const iGrupo = this.byId("grupo");
@@ -50,14 +53,13 @@ sap.ui.define(
 
         tProvGrupo.setText(iProveedor.getValue() + "     " + "(" + iGrupo.getValue() + ")");
 
-        
-
         oModelOData.read("/objetivosSet", {
           filters: oDataFilter,
           urlParameters: {
             $expand: "objetivosComp",
           },
           success: (aData) => {
+            console.log(aData);
             if (aData.results.length === 0) {
               this._busyDialogLoad.close();
               sap.m.MessageToast.show("No hay datos para los filtros seleccionados");
@@ -67,20 +69,46 @@ sap.ui.define(
               for (let month in item.objetivosComp.results) {
                 const previousMonthData = item.objetivosComp.results[month - 1];
 
-                item.objetivosComp.results[month].objBalanceWithout = item.objetivosComp.results[month]
-                  ? item.objetivosComp.results[month].SaldoAnterior * (1 + item.objetivosComp.results[month].Incremento / 100)
-                  : 0;
-
+                console.log(item.objetivosComp.results[month]);
+                //Incremento
                 item.objetivosComp.results[month].Incremento = item.objetivosComp.results[month].Incremento ? item.objetivosComp.results[month].Incremento : 0;
 
+                item.objetivosComp.results[month].CantidadAnterior = item.objetivosComp.results[month].CantidadAnterior
+                  ? item.objetivosComp.results[month].CantidadAnterior
+                  : 0;
+                //Cantidad sin saldo Anterior
+                item.objetivosComp.results[month].objBalanceWithout = item.objetivosComp.results[month]
+                  ? item.objetivosComp.results[month].CantidadAnterior * (1 + item.objetivosComp.results[month].Incremento / 100)
+                  : 0;
+
+                //Cantidad con saldo Anterior
                 item.objetivosComp.results[month].objBalanceWith =
                   previousMonthData && previousMonthData.objetive && previousMonthData.objetive < 0
                     ? item.objetivosComp.results[month].objBalanceWithout + Math.abs(previousMonthData.objetive)
                     : item.objetivosComp.results[month].objBalanceWithout;
 
-                item.objetivosComp.results[month].objetive = (
-                  item.objetivosComp.results[month].SaldoActual - item.objetivosComp.results[month].objBalanceWith
-                ).toFixed(2);
+                //Saldo Objetivo
+                item.objetivosComp.results[month].objetive = item.objetivosComp.results[month].CantidadActual
+                  ? item.objetivosComp.results[month].CantidadActual - item.objetivosComp.results[month].objBalanceWith
+                  : 0;
+
+                //Acumulado Saldo Objetivo
+                item.objetivosComp.results[month].objetiveAcc =
+                  previousMonthData && previousMonthData.objetiveAcc
+                    ? previousMonthData.objetiveAcc + item.objetivosComp.results[month].objetive
+                    : item.objetivosComp.results[month].objetive;
+
+                //objetivo sin saldo Anterior Valorizado
+                item.objetivosComp.results[month].objBalanceWithoutVal = item.objetivosComp.results[month]
+                  ? (item.objetivosComp.results[month].SaldoActual / item.objetivosComp.results[month].CantidadActual) *
+                    item.objetivosComp.results[month].objBalanceWithout
+                  : 0;
+
+                //objetivo con saldo Anterior Valorizado
+                item.objetivosComp.results[month].objBalanceWithVal = item.objetivosComp.results[month]
+                  ? (item.objetivosComp.results[month].SaldoActual / item.objetivosComp.results[month].CantidadActual) *
+                    item.objetivosComp.results[month].objBalanceWith
+                  : 0;
               }
             });
             oModelo.setData(aData);
@@ -94,7 +122,7 @@ sap.ui.define(
             console.log(error);
           },
         });
-        this.getView().setModel(oCount, "oCount");
+        //this.getView().setModel(oCount, "oCount");
       },
       createDynamicGridTable: function () {
         var oResourceBundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
@@ -118,7 +146,7 @@ sap.ui.define(
         oTableG.addColumn(
           new sap.ui.table.Column({
             label: new sap.m.Label({ text: "" }),
-            width: "200px",
+            width: "220px",
             template: new sap.m.VBox({
               items: [
                 new sap.m.Text({ text: oResourceBundle.getText("salesMonthYear") }).addStyleClass("sapUiTinyMarginBottom"),
@@ -128,7 +156,12 @@ sap.ui.define(
                 new sap.m.Text({ text: oResourceBundle.getText("realSale") }).addStyleClass("sapUiTinyMarginBottom"),
                 new sap.m.Text({ text: "Bultos" }).addStyleClass("sapUiTinyMarginBottom"),
                 new sap.m.Text({ text: oResourceBundle.getText("statusState") }).addStyleClass("sapUiTinyMarginBottom"),
-                new sap.m.Text({ text: oResourceBundle.getText("deliveryProgress") }),
+                new sap.m.Text({ text: oResourceBundle.getText("statusStateAcc") }).addStyleClass("sapUiTinyMarginBottom"),
+                new sap.m.Text({ text: oResourceBundle.getText("deliveryProgress") }).addStyleClass("sapUiTinyMarginBottom"),
+                new sap.m.Text({ text: "" }).addStyleClass("sapUiTinyMarginBottom"),
+                new sap.m.Text({ text: oResourceBundle.getText("objBalanceWithout") + " $" }).addStyleClass("sapUiTinyMarginBottom bold"),
+                new sap.m.Text({ text: oResourceBundle.getText("objBalanceWith") + " $" }).addStyleClass("sapUiTinyMarginBottom bold"),
+                new sap.m.Text({ text: oResourceBundle.getText("realSale") + " $" }).addStyleClass("sapUiTinyMarginBottom bold"),
               ],
             }).addStyleClass("sapUiSmallMarginTopBottom"),
           })
@@ -142,35 +175,63 @@ sap.ui.define(
               width: "180px",
               template: new sap.m.VBox({
                 items: [
-                  new sap.m.Text({ text: "$ {objetivosComp/results/" + i + "/SaldoAnterior}" }).addStyleClass("sapUiTinyMarginBottom"),
+                  new sap.m.Text({
+                    text: { path: "objetivosComp/results/" + i + "/CantidadAnterior", formatter: formatter.formatWithThousandsSeparator },
+                  }).addStyleClass("sapUiTinyMarginBottom"),
                   new sap.m.Text({ text: "{objetivosComp/results/" + i + "/Incremento} %" }).addStyleClass("sapUiTinyMarginBottom"),
-                  new sap.m.Text({ text: "$ {objetivosComp/results/" + i + "/objBalanceWithout}" }).addStyleClass("sapUiTinyMarginBottom"),
-                  new sap.m.Text({ text: "$ {objetivosComp/results/" + i + "/objBalanceWith}" }).addStyleClass("sapUiTinyMarginBottom"),
-                  new sap.m.Text({ text: "$ {objetivosComp/results/" + i + "/SaldoActual}" }).addStyleClass("sapUiTinyMarginBottom"),
+                  new sap.m.Text({
+                    text: { path: "objetivosComp/results/" + i + "/objBalanceWithout", formatter: formatter.formatWithThousandsSeparator },
+                  }).addStyleClass("sapUiTinyMarginBottom"),
+                  new sap.m.Text({
+                    text: { path: "objetivosComp/results/" + i + "/objBalanceWith", formatter: formatter.formatWithThousandsSeparator },
+                  }).addStyleClass("sapUiTinyMarginBottom"),
+                  new sap.m.Text({
+                    text: { path: "objetivosComp/results/" + i + "/CantidadActual", formatter: formatter.formatWithThousandsSeparator },
+                  }).addStyleClass("sapUiTinyMarginBottom"),
                   new sap.m.Text({ text: "{objetivosComp/results/" + i + "/Bultos} Bto" }).addStyleClass("sapUiTinyMarginBottom"),
                   new sap.m.ObjectStatus({
-                    text: "$ {objetivosComp/results/" + i + "/objetive}",
+                    text: { path: "objetivosComp/results/" + i + "/objetive", formatter: formatter.formatWithThousandsSeparator },
                     state: {
                       parts: [{ path: "objetivosComp/results/" + i + "/objetive" }],
+                      formatter: formatter.objetive,
+                    },
+                  }).addStyleClass("sapUiTinyMarginBottom"),
+                  new sap.m.ObjectStatus({
+                    text: { path: "objetivosComp/results/" + i + "/objetiveAcc", formatter: formatter.formatWithThousandsSeparator },
+                    state: {
+                      parts: [{ path: "objetivosComp/results/" + i + "/objetiveAcc" }],
                       formatter: formatter.objetive,
                     },
                   }).addStyleClass("sapUiTinyMarginBottom"),
 
                   new sap.m.ProgressIndicator({
                     width: "90%",
-                    percentValue: "{= ${objetivosComp/results/" + i + "/SaldoActual} / ${objetivosComp/results/" + i + "/objBalanceWith} * 100}",
+                    percentValue: "{= ${objetivosComp/results/" + i + "/CantidadActual} / ${objetivosComp/results/" + i + "/objBalanceWith} * 100}",
                     displayValue: {
-                      parts: [{ path: "objetivosComp/results/" + i + "/SaldoActual" }, { path: "objetivosComp/results/" + i + "/objBalanceWith" }],
+                      parts: [{ path: "objetivosComp/results/" + i + "/CantidadActual" }, { path: "objetivosComp/results/" + i + "/objBalanceWith" }],
                       formatter: formatter.formatPercentage,
                     },
                     state: {
-                      parts: [{ path: "objetivosComp/results/" + i + "/SaldoActual" }, { path: "objetivosComp/results/" + i + "/objBalanceWith" }],
+                      parts: [{ path: "objetivosComp/results/" + i + "/CantidadActual" }, { path: "objetivosComp/results/" + i + "/objBalanceWith" }],
                       formatter: formatter.progress,
                     },
                     showValue: false,
-                  }).addStyleClass("progressIndicator"),
+                  })
+                    .addStyleClass("progressIndicator")
+                    .addStyleClass("sapUiTinyMarginBottom"),
+
+                  new sap.m.Text({ text: "" }).addStyleClass("sapUiTinyMarginBottom "),
+                  new sap.m.Text({
+                    text: { path: "objetivosComp/results/" + i + "/objBalanceWithoutVal", formatter: formatter.formatWithThousandsSeparator },
+                  }).addStyleClass("sapUiTinyMarginBottom bold"),
+                  new sap.m.Text({
+                    text: { path: "objetivosComp/results/" + i + "/objBalanceWithVal", formatter: formatter.formatWithThousandsSeparator },
+                  }).addStyleClass("sapUiTinyMarginBottom bold"),
+                  new sap.m.Text({
+                    text: { path: "objetivosComp/results/" + i + "/SaldoActual", formatter: formatter.formatWithThousandsSeparator },
+                  }).addStyleClass("sapUiTinyMarginBottom bold"),
                 ],
-              }).addStyleClass("sapUiSmallMarginTopBottom textCenter"),
+              }).addStyleClass("textCenter"),
             })
           );
         }
@@ -203,7 +264,7 @@ sap.ui.define(
       clearSearch: function () {
         const oComboProveedor = this.byId("proveedor"),
           oComboGrupo = this.byId("grupo");
-        oComboProveedor.setSelectedKey("");
+        oComboProveedor.setValue("");
         oComboGrupo.setSelectedKey("");
       },
       clearAllFilters: function () {
@@ -221,7 +282,9 @@ sap.ui.define(
         const mProveedores = new JSONModel();
         oModel.read("/datosProveedorSet", {
           success: (data) => {
-            console.log(data);
+            // console.log(data);
+            const oCount = this.getOwnerComponent().getModel("oCount");
+            oCount.setData({ proveedores: data.results.length });
             mProveedores.setData(data.results);
             this.getView().setModel(mProveedores, "proveedores");
           },
@@ -232,11 +295,55 @@ sap.ui.define(
         const mCompradores = new JSONModel();
         oModel.read("/datosCompradorSet", {
           success: (data) => {
-            console.log(data);
+            // console.log(data);
             mCompradores.setData(data.results);
             this.getView().setModel(mCompradores, "compradores");
           },
         });
+      },
+      onValueHelpRequest: function (oEvent) {
+        var sInputValue = oEvent.getSource().getValue(),
+          oView = this.getView();
+
+        if (!this._pValueHelpDialog) {
+          this._pValueHelpDialog = Fragment.load({
+            id: oView.getId(),
+            name: "reportesobjetivos.fragment.ValueHelpDialog",
+            controller: this,
+          }).then(function (oDialog) {
+            oView.addDependent(oDialog);
+            return oDialog;
+          });
+        }
+        this._pValueHelpDialog.then(function (oDialog) {
+          // Create a filter for the binding
+          oDialog.getBinding("items").filter([new Filter("Nombre", FilterOperator.Contains, sInputValue)]);
+          // Open ValueHelpDialog filtered by the input's value
+          oDialog.open(sInputValue);
+        });
+      },
+      onValueHelpSearch: function (oEvent) {
+        var sValue = oEvent.getParameter("value");
+        var oFilter = new Filter("Nombre", FilterOperator.StartsWith, sValue);
+
+        oEvent.getSource().getBinding("items").filter([oFilter]);
+      },
+
+      onValueHelpClose: function (oEvent) {
+        var oSelectedItem = oEvent.getParameter("selectedItem");
+
+        oEvent.getSource().getBinding("items").filter([]);
+
+        if (!oSelectedItem) {
+          return;
+        }
+
+        this.byId("proveedor").setValue(oSelectedItem.getTitle());
+      },
+      onLiveChange: function (oEvent) {
+        var input = oEvent.getSource();
+
+        input.setValue(input.getValue().toUpperCase());
       },
     });
   }

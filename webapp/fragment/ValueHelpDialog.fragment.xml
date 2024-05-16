@@ -1,0 +1,20 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+>
+    <SelectDialog
+        id="selectDialog"
+        title="Proveedores"
+        items="{
+            path: 'proveedores>/',
+            sorter: { path: 'Nombre' }        
+        }"
+        growing="true"
+        growingThreshold="{oCount>/proveedores}"
+        liveChange=".onValueHelpSearch"
+        confirm=".onValueHelpClose"
+        cancel=".onValueHelpClose"
+    >
+        <StandardListItem title="{proveedores>Nombre}" />
+    </SelectDialog>
+</core:FragmentDefinition>
