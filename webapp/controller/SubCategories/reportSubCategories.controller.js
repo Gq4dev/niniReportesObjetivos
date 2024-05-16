@@ -73,9 +73,14 @@ sap.ui.define(
                 //Incremento
                 item.objetivosComp.results[month].Incremento = item.objetivosComp.results[month].Incremento ? item.objetivosComp.results[month].Incremento : 0;
 
-                item.objetivosComp.results[month].CantidadAnterior = item.objetivosComp.results[month].CantidadAnterior
-                  ? item.objetivosComp.results[month].CantidadAnterior
-                  : 0;
+                //Cantidad mes anterior comparado contra mes ano anterior y mostrar la mayor
+                const previousCantidadAnterior = previousMonthData?.CantidadAnterior ?? 0;
+
+                item.objetivosComp.results[month].CantidadAnterior =
+                  previousCantidadAnterior < item.objetivosComp.results[month].CantidadAnterior
+                    ? item.objetivosComp.results[month].CantidadAnterior
+                    : previousCantidadAnterior;
+
                 //Cantidad sin saldo Anterior
                 item.objetivosComp.results[month].objBalanceWithout = item.objetivosComp.results[month]
                   ? item.objetivosComp.results[month].CantidadAnterior * (1 + item.objetivosComp.results[month].Incremento / 100)
@@ -98,17 +103,29 @@ sap.ui.define(
                     ? previousMonthData.objetiveAcc + item.objetivosComp.results[month].objetive
                     : item.objetivosComp.results[month].objetive;
 
+                let previousCurrencyAnterior = 0;
+                let actualCurrency = 0;
+
+                if (previousMonthData?.SaldoActual && previousMonthData?.CantidadActual) {
+                  previousCurrencyAnterior = previousMonthData.SaldoActual / previousMonthData.CantidadActual;
+                }
+
+                if (item.objetivosComp.results[month]?.SaldoActual && item.objetivosComp.results[month]?.CantidadActual) {
+                  actualCurrency = item.objetivosComp.results[month].SaldoActual / item.objetivosComp.results[month].CantidadActual;
+                }
+
                 //objetivo sin saldo Anterior Valorizado
-                item.objetivosComp.results[month].objBalanceWithoutVal = item.objetivosComp.results[month]
-                  ? (item.objetivosComp.results[month].SaldoActual / item.objetivosComp.results[month].CantidadActual) *
-                    item.objetivosComp.results[month].objBalanceWithout
-                  : 0;
+                item.objetivosComp.results[month].objBalanceWithoutVal =
+                  previousCurrencyAnterior <= 0
+                    ? actualCurrency * item.objetivosComp.results[month].objBalanceWithout
+                    : previousCurrencyAnterior * item.objetivosComp.results[month].objBalanceWithout;
 
                 //objetivo con saldo Anterior Valorizado
-                item.objetivosComp.results[month].objBalanceWithVal = item.objetivosComp.results[month]
-                  ? (item.objetivosComp.results[month].SaldoActual / item.objetivosComp.results[month].CantidadActual) *
-                    item.objetivosComp.results[month].objBalanceWith
-                  : 0;
+
+                item.objetivosComp.results[month].objBalanceWithVal =
+                  previousCurrencyAnterior <= 0
+                    ? actualCurrency * item.objetivosComp.results[month].objBalanceWith
+                    : previousCurrencyAnterior * item.objetivosComp.results[month].objBalanceWith;
               }
             });
             oModelo.setData(aData);
