@@ -69,12 +69,11 @@ sap.ui.define(
               for (let month in item.objetivosComp.results) {
                 const previousMonthData = item.objetivosComp.results[month - 1];
 
-                console.log(item.objetivosComp.results[month]);
                 //Incremento
                 item.objetivosComp.results[month].Incremento = item.objetivosComp.results[month].Incremento ? item.objetivosComp.results[month].Incremento : 0;
 
-                //Cantidad mes anterior comparado contra mes ano anterior y mostrar la mayor
-                const previousCantidadAnterior = previousMonthData?.CantidadAnterior ?? 0;
+                //Venta mes anterior comparado contra mes ano anterior y mostrar la mayor
+                const previousCantidadAnterior = previousMonthData?.CantidadActual ?? 0;
 
                 item.objetivosComp.results[month].CantidadAnterior =
                   previousCantidadAnterior < item.objetivosComp.results[month].CantidadAnterior
@@ -128,6 +127,8 @@ sap.ui.define(
                     : previousCurrencyAnterior * item.objetivosComp.results[month].objBalanceWith;
               }
             });
+
+            
             oModelo.setData(aData);
             oCount.setData({ count: aData.results.length, update: formattedDate });
             bRefresh.setEnabled(true);
@@ -166,7 +167,7 @@ sap.ui.define(
             width: "220px",
             template: new sap.m.VBox({
               items: [
-                new sap.m.Text({ text: oResourceBundle.getText("salesMonthYear") }).addStyleClass("sapUiTinyMarginBottom"),
+                new sap.m.Text({ text: oResourceBundle.getText("bestSale") }).addStyleClass("sapUiTinyMarginBottom"),
                 new sap.m.Text({ text: oResourceBundle.getText("Incremento") }).addStyleClass("sapUiTinyMarginBottom"),
                 new sap.m.Text({ text: oResourceBundle.getText("objBalanceWithout") }).addStyleClass("sapUiTinyMarginBottom"),
                 new sap.m.Text({ text: oResourceBundle.getText("objBalanceWith") }).addStyleClass("sapUiTinyMarginBottom"),
