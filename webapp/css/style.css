@@ -1,12 +1,8 @@
 /* Enter your custom styles here */
 
-.progressIndicator {
-  /* padding: 0.25rem 1.25rem 0.75rem 0 !important ; */
-  margin: none !important;
-}
-
 .textCenter {
-  text-align: center;
+  text-align: end;
+  margin:0px 5px;
 }
 
 .spaceBetween {
@@ -14,7 +10,10 @@
 }
 .sap-phone .sapMPI:not(.sapMPIDisplayOnly),
 .sap-tablet .sapMPI:not(.sapMPIDisplayOnly) {
-  margin: 0 !important;
+  margin-top: 0;
+  margin-bottom: 0;
+  margin-right: auto;
+  margin-left: auto;
 }
 
 .provgrupo {

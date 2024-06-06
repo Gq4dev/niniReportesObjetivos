@@ -76,7 +76,7 @@ sap.ui.define(
                 const previousCantidadAnterior = previousMonthData?.CantidadActual ?? 0;
 
                 item.objetivosComp.results[month].CantidadAnterior =
-                  previousCantidadAnterior < item.objetivosComp.results[month].CantidadAnterior
+                  parseFloat(previousCantidadAnterior) < parseFloat(item.objetivosComp.results[month].CantidadAnterior)
                     ? item.objetivosComp.results[month].CantidadAnterior
                     : previousCantidadAnterior;
 
@@ -128,7 +128,6 @@ sap.ui.define(
               }
             });
 
-            
             oModelo.setData(aData);
             oCount.setData({ count: aData.results.length, update: formattedDate });
             bRefresh.setEnabled(true);
@@ -156,8 +155,9 @@ sap.ui.define(
             label: new sap.m.Label({ text: "SubCategoria" }),
             autoResizable: true,
             template: new sap.m.VBox({
+              alignItems:"Center",
               items: [new sap.m.Text({ text: "{Descripcion}" }), new sap.m.Text({ text: "{Subcategoria}" })],
-            }).addStyleClass("textCenter"),
+            }),
           })
         );
 
@@ -180,6 +180,7 @@ sap.ui.define(
                 new sap.m.Text({ text: oResourceBundle.getText("objBalanceWithout") + " $" }).addStyleClass("sapUiTinyMarginBottom bold"),
                 new sap.m.Text({ text: oResourceBundle.getText("objBalanceWith") + " $" }).addStyleClass("sapUiTinyMarginBottom bold"),
                 new sap.m.Text({ text: oResourceBundle.getText("realSale") + " $" }).addStyleClass("sapUiTinyMarginBottom bold"),
+                new sap.m.Text({ text: oResourceBundle.getText("deliveryProgress") }).addStyleClass("sapUiTinyMarginBottom bold"),
               ],
             }).addStyleClass("sapUiSmallMarginTopBottom"),
           })
@@ -192,6 +193,10 @@ sap.ui.define(
               label: new sap.m.Label({ text: monthDescriptions[i] }),
               width: "180px",
               template: new sap.m.VBox({
+                justifyContent: "Center",
+                alignItems: "Stretch",
+                alignContent: "Stretch",
+                wrap: "Wrap",
                 items: [
                   new sap.m.Text({
                     text: { path: "objetivosComp/results/" + i + "/CantidadAnterior", formatter: formatter.formatWithThousandsSeparator },
@@ -224,7 +229,10 @@ sap.ui.define(
 
                   new sap.m.ProgressIndicator({
                     width: "90%",
-                    percentValue: "{= ${objetivosComp/results/" + i + "/CantidadActual} / ${objetivosComp/results/" + i + "/objBalanceWith} * 100}",
+                    percentValue: {
+                      parts: [{ path: "objetivosComp/results/" + i + "/CantidadActual" }, { path: "objetivosComp/results/" + i + "/objBalanceWith" }],
+                      formatter: formatter.formatPercentageValue,
+                    },
                     displayValue: {
                       parts: [{ path: "objetivosComp/results/" + i + "/CantidadActual" }, { path: "objetivosComp/results/" + i + "/objBalanceWith" }],
                       formatter: formatter.formatPercentage,
@@ -233,21 +241,65 @@ sap.ui.define(
                       parts: [{ path: "objetivosComp/results/" + i + "/CantidadActual" }, { path: "objetivosComp/results/" + i + "/objBalanceWith" }],
                       formatter: formatter.progress,
                     },
-                    showValue: false,
-                  })
-                    .addStyleClass("progressIndicator")
-                    .addStyleClass("sapUiTinyMarginBottom"),
+                    showValue: true,
+                  }),
 
                   new sap.m.Text({ text: "" }).addStyleClass("sapUiTinyMarginBottom "),
-                  new sap.m.Text({
-                    text: { path: "objetivosComp/results/" + i + "/objBalanceWithoutVal", formatter: formatter.formatWithThousandsSeparator },
+                  new sap.m.HBox({
+                    width: "100%",
+                    justifyContent: "SpaceBetween",
+                    alignItems: "End",
+                    items: [
+                      new sap.m.Text({
+                        text: "$",
+                      }).addStyleClass("sapUiTinyMarginEnd bold"),
+                      new sap.m.Text({
+                        text: { path: "objetivosComp/results/" + i + "/objBalanceWithoutVal", formatter: formatter.formatWithThousandsSeparator },
+                      }),
+                    ],
                   }).addStyleClass("sapUiTinyMarginBottom bold"),
-                  new sap.m.Text({
-                    text: { path: "objetivosComp/results/" + i + "/objBalanceWithVal", formatter: formatter.formatWithThousandsSeparator },
+                  new sap.m.HBox({
+                    width: "100%",
+                    justifyContent: "SpaceBetween",
+                    alignItems: "End",
+                    items: [
+                      new sap.m.Text({
+                        text: "$",
+                      }).addStyleClass("sapUiTinyMarginEnd bold"),
+                      new sap.m.Text({
+                        text: { path: "objetivosComp/results/" + i + "/objBalanceWithVal", formatter: formatter.formatWithThousandsSeparator },
+                      }),
+                    ],
                   }).addStyleClass("sapUiTinyMarginBottom bold"),
-                  new sap.m.Text({
-                    text: { path: "objetivosComp/results/" + i + "/SaldoActual", formatter: formatter.formatWithThousandsSeparator },
+                  new sap.m.HBox({
+                    width: "100%",
+                    justifyContent: "SpaceBetween",
+                    alignItems: "End",
+                    items: [
+                      new sap.m.Text({
+                        text: "$",
+                      }).addStyleClass("sapUiTinyMarginEnd bold"),
+                      new sap.m.Text({
+                        text: { path: "objetivosComp/results/" + i + "/SaldoActual", formatter: formatter.formatWithThousandsSeparator },
+                      }),
+                    ],
                   }).addStyleClass("sapUiTinyMarginBottom bold"),
+                  new sap.m.ProgressIndicator({
+                    width: "90%",
+                    percentValue: {
+                      parts: [{ path: "objetivosComp/results/" + i + "/SaldoActual" }, { path: "objetivosComp/results/" + i + "/objBalanceWithVal" }],
+                      formatter: formatter.formatPercentageValue,
+                    },
+                    displayValue: {
+                      parts: [{ path: "objetivosComp/results/" + i + "/SaldoActual" }, { path: "objetivosComp/results/" + i + "/objBalanceWithVal" }],
+                      formatter: formatter.formatPercentage,
+                    },
+                    state: {
+                      parts: [{ path: "objetivosComp/results/" + i + "/SaldoActual" }, { path: "objetivosComp/results/" + i + "/objBalanceWithVal" }],
+                      formatter: formatter.progress,
+                    },
+                    showValue: true,
+                  })
                 ],
               }).addStyleClass("textCenter"),
             })

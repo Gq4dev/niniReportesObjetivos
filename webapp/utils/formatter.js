@@ -39,7 +39,18 @@ sap.ui.define(["sap/ui/core/format/NumberFormat"], function (NumberFormat) {
         return "";
       }
       let percentage = (salesYear / objBalanceWith) * 100;
-      return percentage.toFixed(2) + "%";
+      return percentage.toFixed(2) + " %";
+    },
+    formatPercentageValue: function (salesYear, objBalanceWith) {
+      if (objBalanceWith === 0) {
+        return "";
+      }
+      let percentage = (salesYear / objBalanceWith) * 100;
+      if (percentage < 100) {
+        return percentage.toFixed(2);
+      } else {
+        return 100;
+      }
     },
     formatWithThousandsSeparator: function (sNumber) {
       if (!sNumber) {
@@ -51,7 +62,7 @@ sap.ui.define(["sap/ui/core/format/NumberFormat"], function (NumberFormat) {
         return sNumber;
       }
       // Formatear el número con separadores de miles
-      return number.toLocaleString("es-es");
+      return number.toLocaleString("es-es", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     },
   };
 });

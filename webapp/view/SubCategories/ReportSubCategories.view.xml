@@ -21,8 +21,11 @@
             persistencyKey="myPersKey"
             useToolbar="false"
             search="prepareOData"
+            showFilterConfiguration="false"
+            filterContainerWidth="27rem"  
         >
-            <fb:filterGroupItems>
+            <fb:filterGroupItems
+            >
                 <fb:FilterGroupItem
                     name="proveedor"
                     label="{i18n>proveedor}"
@@ -34,7 +37,7 @@
                             id="proveedor"
                             liveChange="onLiveChange"
                             showSuggestion="true"
-                            showValueHelp="true"
+                            showValueHelp="false"
                             valueHelpRequest=".onValueHelpRequest"
                             suggestionItems="{
                                       path: 'proveedores>/',
@@ -90,6 +93,7 @@
                             press="clearSearch"
                         />
                     </fb:control>
+                    
                 </fb:FilterGroupItem>
             </fb:filterGroupItems>
         </fb:FilterBar>
