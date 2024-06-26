@@ -44,12 +44,17 @@ sap.ui.define(["sap/ui/core/format/NumberFormat"], function (NumberFormat) {
       }
     },
     formatPercentageValue(realSale, objBalanceWith) {
-      let percentage = 0;
+      let percentage = (realSale / objBalanceWith) * 100;
+
       if (realSale === 0 || objBalanceWith === 0) {
-        return percentage;
+        percentage = 0;
+      }
+
+      console.log(percentage);
+      if (percentage > 100) {
+        return 100;
       } else {
-        percentage = (realSale / objBalanceWith) * 100;
-        return percentage || percentage < 100 || percentage > 0 ? percentage.toFixed(2) : percentage;
+        return percentage;
       }
     },
     formatWithThousandsSeparator: function (sNumber) {
