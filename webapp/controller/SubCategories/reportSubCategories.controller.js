@@ -51,6 +51,7 @@ sap.ui.define(
           oDataFilter.push(new Filter("Comprador", FilterOperator.EQ, iGrupo.getSelectedKey()));
         }
 
+
         tProvGrupo.setText(iProveedor.getValue() + "     " + "(" + iGrupo.getValue() + ")");
 
         oModelOData.read("/objetivosSet", {
@@ -59,49 +60,26 @@ sap.ui.define(
             $expand: "objetivosComp",
           },
           success: (aData) => {
-            console.log(aData);
             if (aData.results.length === 0) {
               this._busyDialogLoad.close();
               sap.m.MessageToast.show("No hay datos para los filtros seleccionados");
               return;
             }
-            aData.results.forEach((item, idx) => {
-              for (let month in item.objetivosComp.results) {
+            aData.results.forEach((item) => {
+              const maxMonths = (currentDateTime.getMonth() + 1).toString().padStart(2, "0");
+              const monthsMap = {};
+
+              // Crear un mapa de los meses existentes
+              item.objetivosComp.results.forEach((result) => {
+                monthsMap[result.Mes] = result;
+              });
+
+              // Asegurarse de que cada mes exista y si falta, agregarlo con datos en cero
+              for (let month = 0; month < maxMonths; month++) {
+                const monthStr = (month + 1).toString().padStart(2, "0");
+
                 const previousMonthData = item.objetivosComp.results[month - 1];
-
-                //Incremento
-                item.objetivosComp.results[month].Incremento = item.objetivosComp.results[month].Incremento ? item.objetivosComp.results[month].Incremento : 0;
-
-                //Venta mes anterior comparado contra mes ano anterior y mostrar la mayor
                 const previousCantidadAnterior = previousMonthData?.CantidadActual ?? 0;
-
-                item.objetivosComp.results[month].CantidadAnterior =
-                  parseFloat(previousCantidadAnterior) < parseFloat(item.objetivosComp.results[month].CantidadAnterior)
-                    ? item.objetivosComp.results[month].CantidadAnterior
-                    : previousCantidadAnterior;
-
-                //Cantidad sin saldo Anterior
-                item.objetivosComp.results[month].objBalanceWithout = item.objetivosComp.results[month]
-                  ? item.objetivosComp.results[month].CantidadAnterior * (1 + item.objetivosComp.results[month].Incremento / 100)
-                  : 0;
-
-                //Cantidad con saldo Anterior
-                item.objetivosComp.results[month].objBalanceWith =
-                  previousMonthData && previousMonthData.objetive && previousMonthData.objetive < 0
-                    ? item.objetivosComp.results[month].objBalanceWithout + Math.abs(previousMonthData.objetive)
-                    : item.objetivosComp.results[month].objBalanceWithout;
-
-                //Saldo Objetivo
-                item.objetivosComp.results[month].objetive = item.objetivosComp.results[month].CantidadActual
-                  ? item.objetivosComp.results[month].CantidadActual - item.objetivosComp.results[month].objBalanceWith
-                  : 0;
-
-                //Acumulado Saldo Objetivo
-                item.objetivosComp.results[month].objetiveAcc =
-                  previousMonthData && previousMonthData.objetiveAcc
-                    ? previousMonthData.objetiveAcc + item.objetivosComp.results[month].objetive
-                    : item.objetivosComp.results[month].objetive;
-
                 let previousCurrencyAnterior = 0;
                 let actualCurrency = 0;
 
@@ -113,18 +91,90 @@ sap.ui.define(
                   actualCurrency = item.objetivosComp.results[month].SaldoActual / item.objetivosComp.results[month].CantidadActual;
                 }
 
-                //objetivo sin saldo Anterior Valorizado
-                item.objetivosComp.results[month].objBalanceWithoutVal =
-                  previousCurrencyAnterior <= 0
-                    ? actualCurrency * item.objetivosComp.results[month].objBalanceWithout
-                    : previousCurrencyAnterior * item.objetivosComp.results[month].objBalanceWithout;
+                if (!monthsMap[monthStr]) {
+                  // Si el mes no existe, agregarlo con datos en cero
+                  item.objetivosComp.results.splice(month, 0, {
+                    Bultos: "0",
+                    CantidadActual: 0,
+                    CantidadAnterior: previousCantidadAnterior,
+                    Ejercicio: item.objetivosComp.results[month - 1] ? item.objetivosComp.results[month - 1].Ejercicio : null,
+                    Incremento: 0,
+                    Mes: monthStr,
+                    SaldoActual: 0,
+                    SaldoAnterior: 0,
+                    Subcategoria: item.Subcategoria,
+                    objBalanceWithout: previousCantidadAnterior,
+                    objBalanceWith: previousCantidadAnterior + Math.abs(previousMonthData?.objetive ? previousMonthData.objetive : 0),
 
-                //objetivo con saldo Anterior Valorizado
+                    objetive:
+                      (previousCantidadAnterior + Math.abs(item.objetivosComp.results[month - 1] ? item.objetivosComp.results[month - 1].objetive : 0)) * -1,
 
-                item.objetivosComp.results[month].objBalanceWithVal =
-                  previousCurrencyAnterior <= 0
-                    ? actualCurrency * item.objetivosComp.results[month].objBalanceWith
-                    : previousCurrencyAnterior * item.objetivosComp.results[month].objBalanceWith;
+                    objetiveAcc:
+                      previousMonthData && previousMonthData?.objetiveAcc
+                        ? previousMonthData.objetiveAcc +
+                          (previousCantidadAnterior + Math.abs(item.objetivosComp.results[month - 1] ? item.objetivosComp.results[month - 1].objetive : 0)) * -1
+                        : (previousCantidadAnterior + Math.abs(item.objetivosComp.results[month - 1] ? item.objetivosComp.results[month - 1].objetive : 0)) *
+                          -1,
+
+                    objBalanceWithVal:
+                      previousCurrencyAnterior <= 0
+                        ? actualCurrency * (previousCantidadAnterior + Math.abs(previousMonthData?.objetive ? previousMonthData.objetive : 0))
+                        : previousCurrencyAnterior * (previousCantidadAnterior + Math.abs(previousMonthData?.objetive ? previousMonthData.objetive : 0)),
+
+                    objBalanceWithoutVal:
+                      previousCurrencyAnterior <= 0 ? actualCurrency * previousCantidadAnterior : previousCurrencyAnterior * previousCantidadAnterior,
+                  });
+                } else {
+                  // Si el mes ya existe, asegurar que los valores sean del tipo correcto
+
+                  (item.objetivosComp.results[month].CantidadActual = parseFloat(item.objetivosComp.results[month].CantidadActual)),
+                    (item.objetivosComp.results[month].CantidadAnterior =
+                      previousCantidadAnterior < parseFloat(item.objetivosComp.results[month].CantidadAnterior)
+                        ? parseFloat(item.objetivosComp.results[month].CantidadAnterior)
+                        : previousCantidadAnterior);
+
+                  item.objetivosComp.results[month].Incremento = parseFloat(item.objetivosComp.results[month].Incremento);
+                  item.objetivosComp.results[month].SaldoActual = parseFloat(item.objetivosComp.results[month].SaldoActual);
+                  item.objetivosComp.results[month].SaldoAnterior = parseFloat(item.objetivosComp.results[month].SaldoAnterior);
+                  item.objetivosComp.results[month].Subcategoria = item.Subcategoria;
+                  //Cantidad sin saldo Anterior
+                  (item.objetivosComp.results[month].objBalanceWithout = item.objetivosComp.results[month].CantidadAnterior
+                    ? item.objetivosComp.results[month].CantidadAnterior * (1 + item.objetivosComp.results[month].Incremento / 100)
+                    : item.objetivosComp.results[month].CantidadAnterior),
+                    //Cantidad con saldo Anterior
+                    (item.objetivosComp.results[month].objBalanceWith =
+                      previousMonthData && previousMonthData.objetive && previousMonthData.objetive < 0
+                        ? item.objetivosComp.results[month].objBalanceWithout + Math.abs(previousMonthData.objetive)
+                        : item.objetivosComp.results[month].objBalanceWithout);
+                  //Saldo Objetivo
+                  item.objetivosComp.results[month].objetive = item.objetivosComp.results[month].CantidadActual
+                    ? item.objetivosComp.results[month].CantidadActual - item.objetivosComp.results[month].objBalanceWith
+                    : 0;
+
+                  //Acumulado Saldo Objetivo
+                  item.objetivosComp.results[month].objetiveAcc =
+                    previousMonthData && previousMonthData.objetiveAcc
+                      ? previousMonthData.objetiveAcc + item.objetivosComp.results[month].objetive
+                      : item.objetivosComp.results[month].objetive;
+
+                  if (previousMonthData?.SaldoActual && previousMonthData?.CantidadActual) {
+                    previousCurrencyAnterior = previousMonthData.SaldoActual / previousMonthData.CantidadActual;
+                  }
+
+                  if (item.objetivosComp.results[month]?.SaldoActual && item.objetivosComp.results[month]?.CantidadActual) {
+                    actualCurrency = item.objetivosComp.results[month].SaldoActual / item.objetivosComp.results[month].CantidadActual;
+                  }
+                  //objetivo sin saldo Anterior Valorizado
+                  item.objetivosComp.results[month].objBalanceWithoutVal =
+                    previousCurrencyAnterior <= 0
+                      ? actualCurrency * item.objetivosComp.results[month].objBalanceWithout
+                      : previousCurrencyAnterior * item.objetivosComp.results[month].objBalanceWithout;
+                  //objetivo con saldo Anterior Valorizado
+                  item.objetivosComp.results[month].objBalanceWithVal =
+                    previousCurrencyAnterior <= 0
+                      ? actualCurrency * item.objetivosComp.results[month].objBalanceWith
+                      : previousCurrencyAnterior * item.objetivosComp.results[month].objBalanceWith;
+                }
               }
             });
 
@@ -155,7 +205,7 @@ sap.ui.define(
             label: new sap.m.Label({ text: "SubCategoria" }),
             autoResizable: true,
             template: new sap.m.VBox({
-              alignItems:"Center",
+              alignItems: "Center",
               items: [new sap.m.Text({ text: "{Descripcion}" }), new sap.m.Text({ text: "{Subcategoria}" })],
             }),
           })
@@ -286,6 +336,7 @@ sap.ui.define(
                   }).addStyleClass("sapUiTinyMarginBottom bold"),
                   new sap.m.ProgressIndicator({
                     width: "90%",
+                    
                     percentValue: {
                       parts: [{ path: "objetivosComp/results/" + i + "/SaldoActual" }, { path: "objetivosComp/results/" + i + "/objBalanceWithVal" }],
                       formatter: formatter.formatPercentageValue,
@@ -299,7 +350,7 @@ sap.ui.define(
                       formatter: formatter.progress,
                     },
                     showValue: true,
-                  })
+                  }),
                 ],
               }).addStyleClass("textCenter"),
             })

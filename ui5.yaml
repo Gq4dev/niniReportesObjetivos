@@ -17,7 +17,7 @@ server:
           url: https://ui5.sap.com
         backend:
           - path: /sap
-            url: http://appprd.nini.com.ar:8001/
+            url: http://appqas.nini.com.ar:8001/
             client: '400'
     - name: fiori-tools-appreload
       afterMiddleware: compression

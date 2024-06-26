@@ -34,18 +34,17 @@ sap.ui.define(["sap/ui/core/format/NumberFormat"], function (NumberFormat) {
         return sap.ui.core.ValueState.Success;
       }
     },
-    formatPercentage: function (salesYear, objBalanceWith) {
-      if (objBalanceWith === 0) {
-        return "";
+    formatPercentage: function (realSale, objBalanceWith) {
+      let percentage = 0;
+      if (realSale === 0 || objBalanceWith === 0) {
+        return percentage;
+      } else {
+        percentage = (realSale / objBalanceWith) * 100;
+        return percentage ? percentage.toLocaleString("es-es", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "%" : percentage + "%";
       }
-      let percentage = (salesYear / objBalanceWith) * 100;
-      return percentage.toFixed(2) + " %";
     },
-    formatPercentageValue: function (salesYear, objBalanceWith) {
-      if (objBalanceWith === 0) {
-        return "";
-      }
-      let percentage = (salesYear / objBalanceWith) * 100;
+    formatPercentageValue(realSale, objBalanceWith) {
+      let percentage = (realSale / objBalanceWith) * 100;
       if (percentage < 100) {
         return percentage.toFixed(2);
       } else {
@@ -53,16 +52,7 @@ sap.ui.define(["sap/ui/core/format/NumberFormat"], function (NumberFormat) {
       }
     },
     formatWithThousandsSeparator: function (sNumber) {
-      if (!sNumber) {
-        return "";
-      }
-      // Convertir el string a número
-      var number = parseFloat(sNumber);
-      if (isNaN(number)) {
-        return sNumber;
-      }
-      // Formatear el número con separadores de miles
-      return number.toLocaleString("es-es", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      return sNumber ? sNumber.toLocaleString("es-es", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : sNumber;
     },
   };
 });
